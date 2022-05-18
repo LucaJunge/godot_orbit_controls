@@ -20,13 +20,13 @@ _global_script_class_icons={
 
 [application]
 
-config/name="godot_orbit_controls"
-run/main_scene="res://orbit_controls_test.tscn"
+config/name="Orbit Controls"
+run/main_scene="res://tests/Simple.tscn"
 config/icon="res://icon.png"
 
 [editor_plugins]
 
-enabled=PoolStringArray(  )
+enabled=PoolStringArray( "res://addons/orbit_controls/plugin.cfg" )
 
 [physics]
 

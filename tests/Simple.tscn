@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://addons/orbit_controls/orbit-controls.gd" type="Script" id=1]
+
+[node name="Main" type="Spatial"]
+
+[node name="Box" type="CSGBox" parent="."]
+width = 1.0
+height = 1.0
+depth = 1.0
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2 )
+
+[node name="OrbitControls" type="Node" parent="."]
+script = ExtResource( 1 )
+_camera = NodePath("../Camera")
