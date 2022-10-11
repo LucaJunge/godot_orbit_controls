@@ -24,6 +24,12 @@ config/name="Orbit Controls"
 run/main_scene="res://tests/Simple.tscn"
 config/icon="res://icon.png"
 
+[display]
+
+window/size/width=1920
+window/size/height=1080
+window/size/borderless=true
+
 [editor_plugins]
 
 enabled=PoolStringArray( "res://addons/orbit_controls/plugin.cfg" )
