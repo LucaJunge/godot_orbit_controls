@@ -52,47 +52,59 @@ rings = 1
 
 [node name="Main" type="Spatial"]
 
+[node name="OrbitControls" type="Node" parent="."]
+script = ExtResource( 1 )
+_camera = NodePath("../Camera")
+debug = true
+
 [node name="Box" type="CSGBox" parent="."]
 material_override = SubResource( 3 )
+cast_shadow = 0
 width = 0.5
 height = 0.5
 depth = 0.5
 
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3 )
 current = true
 
 [node name="CSGMesh" type="CSGMesh" parent="Camera"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0 )
 mesh = SubResource( 1 )
 
-[node name="OrbitControls" type="Node" parent="."]
-script = ExtResource( 1 )
-_camera = NodePath("../Camera")
-
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+rect_min_size = Vector2( 50, 50 )
 mouse_filter = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 alignment = 2
 
 [node name="ViewportContainer" type="ViewportContainer" parent="CanvasLayer/HBoxContainer"]
-margin_left = 1670.0
-margin_right = 1920.0
-margin_bottom = 1080.0
+margin_left = 460.0
+margin_right = 960.0
+margin_bottom = 500.0
+rect_min_size = Vector2( 50, 50 )
 mouse_filter = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
 
 [node name="Viewport" type="Viewport" parent="CanvasLayer/HBoxContainer/ViewportContainer"]
-size = Vector2( 250, 250 )
+size = Vector2( 500, 500 )
 transparent_bg = true
 handle_input_locally = false
 fxaa = true
 render_target_update_mode = 3
 
 [node name="DebugCamera" type="Camera" parent="CanvasLayer/HBoxContainer/ViewportContainer/Viewport"]
-transform = Transform( 0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 3, 2, 3 )
+transform = Transform( 0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 5, 4, 3 )
 fov = 45.0
 size = 6.0
 script = ExtResource( 2 )
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer"]
+margin_right = 40.0
+margin_bottom = 40.0

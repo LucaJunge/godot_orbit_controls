@@ -20,7 +20,7 @@ func copy(_other_spherical: Spherical):
 	phi = _other_spherical._phi
 	theta = _other_spherical._theta
 
-func makeSafe():
+func make_safe() -> void:
 	var precision: float = 0.0000000000001
 	phi = max(precision, min(PI - precision, phi))
 
@@ -35,3 +35,11 @@ func set_from_cartesian_coords(x: float, y: float, z: float):
 	else:
 		theta = atan2(x, z)
 		phi = acos(clamp(y / radius, -1, 1))
+
+func apply_to_vector(vector: Vector3) -> Vector3:
+	var sin_phi_radius = sin(phi) * radius
+	
+	vector.x = sin_phi_radius * sin(theta)
+	vector.y = cos(phi) * radius
+	vector.z = sin_phi_radius * cos(theta)
+	return vector

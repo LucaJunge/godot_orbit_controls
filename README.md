@@ -2,16 +2,18 @@
 
 🚧 In Development 🚧
 
-This Plugin adds Orbit Controls to the Godot Game Engine.
-> Inspired by the Orbit Controls of [three.js](https://threejs.org/docs/#examples/en/controls/OrbitControls)
+This plugin adds Orbit Controls to the Godot Game Engine.
+
+See the live demo [here](https://lucajunge.github.io/godot-orbit-controls/build/index.html)
 
 <p align="center">
-<img width="500" src="./images/preview.png"/>
+<img width="500" src="./images/orbit_controls_test.png"/>
 </p>
 
 # Installation
 
 Clone the repository
+
 ```
 git clone https://github.com/LucaJunge/godot-orbit-controls.git
 ```
@@ -22,17 +24,12 @@ Enable the plugin in the `Project Settings`.
 
 # Usage
 
-To use the plugin in your project set up an example like this, with the OrbitControls in your scene tree.
+To use the plugin in your project add the `Orbit Controls` node to your scene.
 
-<p align="center">
-<img width="250" src="./images/setup-example.png"/>
-</p>
-
-Click on `Assign` to select your `Camera` from the scene tree. This will be the camera that moves around in your scene.
-
+Click on `Assign` to select your camera from the scene tree. This will be the camera that moves around in your scene.
 
 You can also set a `Target` which the camera will orbit.
 
-<p align="center">
-<img width="250" src="./images/configuration.png"/>
-</p>
+# Acknowledgement
+
+This plugin is a GDScript adaption of the Orbit Controls in [three.js](https://github.com/mrdoob/three.js/blob/master/examples/jsm/controls/OrbitControls.js)
