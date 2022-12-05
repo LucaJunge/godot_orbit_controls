@@ -21,8 +21,10 @@ _global_script_class_icons={
 [application]
 
 config/name="Orbit Controls"
+config/description="Orbit Controls for Godot Engine.
+Ported from three.js."
 run/main_scene="res://tests/Simple.tscn"
-config/icon="res://icon.png"
+config/icon="res://addons/orbit_controls/godot-orbit-controls.svg"
 
 [display]
 
@@ -34,6 +36,10 @@ window/fullsize=true
 [editor_plugins]
 
 enabled=PoolStringArray( "res://addons/orbit_controls/plugin.cfg" )
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
 
 [physics]
 

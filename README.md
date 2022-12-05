@@ -1,14 +1,31 @@
 # Godot Orbit Controls
 
-🚧 In Development 🚧
+🚧 **In Development** 🚧
 
 This plugin adds Orbit Controls to the Godot Game Engine.
 
-See the live demo [here](https://lucajunge.github.io/godot-orbit-controls/build/index.html)
+The screenshot below is from the live demo which can be visited here:  
+[https://lucajunge.github.io/godot-orbit-controls/build/index.html](https://lucajunge.github.io/godot-orbit-controls/build/index.html)
 
-<p align="center">
-<img width="500" src="./images/orbit_controls_test.png"/>
-</p>
+![Preview of the orbit controls](/images/orbit_controls_test.png)
+
+# Features (In development)
+
+| **Feature**    | **Available with Mouse** | **Available with Touch** |
+| -------------- | :----------------------: | :----------------------: |
+| **Rotating**   |           [ ]            |           [x]            |
+| **Panning**    |           [ ]            |           [ ]            |
+| **Dolly Zoom** |           [ ]            |           [ ]            |
+
+Other features unrelated to the input method include (and may not be implemented yet):
+
+- Enabling and disabling the controls (useful for cutscenes or transitions)
+- Displaying debug information
+- Specifying the target to rotate around
+- Setting minimum and maximum distance for zooming
+- Setting limits for horizontal and vertical rotation
+- Enabling and disabling zooming, rotation, panning and damping
+- Setting speeds for rotating, zooming and panning
 
 # Installation
 
@@ -24,12 +41,18 @@ Enable the plugin in the `Project Settings`.
 
 # Usage
 
-To use the plugin in your project add the `Orbit Controls` node to your scene.
+To use the plugin in your project add the ![](addons/orbit_controls/godot-orbit-controls.png) `OrbitControls` node to your scene.  
+An example scene looks like this:
 
-Click on `Assign` to select your camera from the scene tree. This will be the camera that moves around in your scene.
+![](images/example_setup.png)
 
-You can also set a `Target` which the camera will orbit.
+To configure the add-on, take a look at the inspector.  
+In the `Camera` slot, click `Assign` to select your camera from the current scene tree. This will be the camera that moves around in your scene.
+
+You can also set a `Vector3` as the `Target` which the camera will orbit and adjust settings (not all settings implemented yet):
+
+![](images/example_inspector.png)
 
 # Acknowledgement
 
-This plugin is a GDScript adaption of the Orbit Controls in [three.js](https://github.com/mrdoob/three.js/blob/master/examples/jsm/controls/OrbitControls.js)
+This plugin is a GDScript port of the Orbit Controls in [three.js](https://github.com/mrdoob/three.js/blob/master/examples/jsm/controls/OrbitControls.js)

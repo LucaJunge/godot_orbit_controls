@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/orbit_controls_test.png-0c1a97f5a42a9d37fdbb6180f0f1f6bc.stex"
+path="res://.import/godot-orbit-controls.png-6db1ea195863a6c9c96cd00159bfd436.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://images/orbit_controls_test.png"
-dest_files=[ "res://.import/orbit_controls_test.png-0c1a97f5a42a9d37fdbb6180f0f1f6bc.stex" ]
+source_file="res://addons/orbit_controls/godot-orbit-controls.png"
+dest_files=[ "res://.import/godot-orbit-controls.png-6db1ea195863a6c9c96cd00159bfd436.stex" ]
 
 [params]
 
