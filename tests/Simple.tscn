@@ -56,8 +56,30 @@ rings = 1
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 1 )
-_camera = NodePath("../MainCamera")
 enabled = true
+debug = false
+_camera = NodePath("../MainCamera")
+target/target = Vector3( 0, 0, 0 )
+auto_rotate/enabled = false
+auto_rotate/speed = 1.0
+rotate/enabled = true
+rotate/speed = 1.0
+dolly/minimum_distance = 0.001
+dolly/maximum_distance = 100.0
+zoom/enabled = true
+zoom/speed = 1.0
+zoom/minimum_zoom = 0.001
+zoom/maximum_zoom = 100.0
+limits/min_polar_angle = 1e-06
+limits/max_polar_angle = 3.14159
+limits/min_azimuth_angle = -6.28318
+limits/max_azimuth_angle = 6.28319
+damping/enabled = true
+damping/damping_factor = 0.05
+pan/enabled = true
+pan/speed = 1.0
+pan/screen_space_panning = false
+pan/key_pan_speed = 7.0
 
 [node name="OrbitTarget" type="CSGBox" parent="."]
 layers = 2
@@ -68,7 +90,7 @@ height = 0.5
 depth = 0.5
 
 [node name="MainCamera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3 )
+transform = Transform( 1, 1.13479e-20, -0.000185331, 0, 1, 6.12303e-17, 0.000185331, -6.12303e-17, 1, -0.000555992, 1.83691e-16, 3 )
 cull_mask = 1048574
 current = true
 
