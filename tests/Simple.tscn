@@ -52,12 +52,20 @@ rings = 1
 
 [node name="Main" type="Spatial"]
 
+[node name="OrbitTarget" type="CSGBox" parent="."]
+layers = 2
+material_override = SubResource( 3 )
+cast_shadow = 0
+width = 0.5
+height = 0.5
+depth = 0.5
+
 [node name="OrbitControls" type="Control" parent="."]
-anchor_right = 1.0
-anchor_bottom = 1.0
+margin_right = 40.0
+margin_bottom = 40.0
 script = ExtResource( 1 )
 enabled = true
-debug = false
+debug = true
 _camera = NodePath("../MainCamera")
 target/target = Vector3( 0, 0, 0 )
 auto_rotate/enabled = false
@@ -81,14 +89,6 @@ pan/speed = 1.0
 pan/screen_space_panning = false
 pan/key_pan_speed = 7.0
 
-[node name="OrbitTarget" type="CSGBox" parent="."]
-layers = 2
-material_override = SubResource( 3 )
-cast_shadow = 0
-width = 0.5
-height = 0.5
-depth = 0.5
-
 [node name="MainCamera" type="Camera" parent="."]
 transform = Transform( 1, 1.13479e-20, -0.000185331, 0, 1, 6.12303e-17, 0.000185331, -6.12303e-17, 1, -0.000555992, 1.83691e-16, 3 )
 cull_mask = 1048574
@@ -99,6 +99,7 @@ transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -
 mesh = SubResource( 1 )
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+visible = false
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer"]
 anchor_right = 1.0
@@ -130,7 +131,7 @@ size = Vector2( 300, 300 )
 transparent_bg = true
 handle_input_locally = false
 fxaa = true
-render_target_update_mode = 3
+render_target_update_mode = 0
 
 [node name="DebugCamera" type="Camera" parent="CanvasLayer/HBoxContainer/ViewportContainer/Viewport"]
 transform = Transform( 0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 2, 2, 2 )

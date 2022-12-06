@@ -8,15 +8,24 @@ signal end
 
 # ENUMS #
 
-enum STATE {
-	NONE = -1,
+enum MOUSE {
+	LEFT = 0,
+	MIDDLE = 1,
+	RIGHT = 2,
 	ROTATE = 0,
 	DOLLY = 1,
-	PAN = 2,
-	TOUCH_ROTATE = 3,
-	TOUCH_PAN = 4,
-	TOUCH_DOLLY_PAN = 5,
-	TOUCH_DOLLY_ROTATE = 6
+	PAN = 2
+}
+
+enum STATE {
+	NONE = 0,
+	ROTATE = 1,
+	DOLLY = 2,
+	PAN = 3,
+	TOUCH_ROTATE = 4,
+	TOUCH_PAN = 5,
+	TOUCH_DOLLY_PAN = 6,
+	TOUCH_DOLLY_ROTATE = 7
 }
 
 enum TOUCH {
@@ -28,45 +37,45 @@ enum TOUCH {
 
 ### PROPERTIES IN INSPECTOR ###
 
-var enabled: bool
-var debug: bool
-var _camera: NodePath
-var camera: Node
-var target: Vector3
+var enabled: bool = true
+var debug: bool = false
+var _camera: NodePath = NodePath()
+var camera: Node = null
+var target: Vector3 = Vector3(0, 0, 0)
 
 # AUTO-ROTATE
-var auto_rotate: bool
-var auto_rotate_speed: float
+var auto_rotate: bool = false
+var auto_rotate_speed: float = 1.0
 
 # ROTATE
-var enable_rotate: bool
-var rotate_speed: float
+var enable_rotate: bool = true
+var rotate_speed: float = 1.0
 
 # DOLLY (Perspective Cam only)
-var min_distance: float
-var max_distance: float
+var min_distance: float = 0.001
+var max_distance: float = 100.0
 
 # ZOOM (Orthographic Camera only)
-var enable_zoom: bool
-var zoom_speed: float
-var min_zoom: float
-var max_zoom: float
+var enable_zoom: bool = true
+var zoom_speed: float = 1.0
+var min_zoom: float = 0.001
+var max_zoom: float = 100.0
 
 # LIMITS
-var min_polar_angle: float
-var max_polar_angle: float
-var min_azimuth_angle: float
-var max_azimuth_angle: float
+var min_polar_angle: float = 0
+var max_polar_angle: float = PI - 0.0000001
+var min_azimuth_angle: float = - PI * 2.0 + 0.000001
+var max_azimuth_angle: float = 2.0 * PI + 0.000001
 
 # DAMPING
-var enable_damping: bool
-var damping_factor: float
+var enable_damping: bool = true
+var damping_factor: float = 0.05
 
 # PAN
-var enable_pan: bool
-var pan_speed: float
-var screen_space_panning: bool
-var key_pan_speed: float
+var enable_pan: bool = true
+var pan_speed: float = 1.0
+var screen_space_panning: bool = false
+var key_pan_speed: float = 7.0
 
 ### END OF PROPERTIES ###
 
@@ -102,6 +111,7 @@ var pointerPositions = {}
 var scale: float = 1
 var pan_offset = Vector3(0, 0, 0)
 
+var mouse_buttons = { "LEFT": MOUSE.ROTATE, "MIDDLE": MOUSE.DOLLY, "RIGHT": MOUSE.PAN }
 var touches = { "ONE": TOUCH.ROTATE, "TWO": TOUCH.DOLLY_PAN }
 var state = STATE.NONE
 
@@ -124,13 +134,22 @@ func _ready():
 		enable_debug()
 
 func _process(delta):
-	if valid:
-		update()
+	if not valid:
+		return
+	
+	update()
 	
 	if debug:
-		debug_nodes["spherical_delta"].text = "phi: %s\ntheta:%s" % [ spherical_delta.phi, spherical_delta.theta]
-		debug_nodes["camera_position"].text = "cam_x: %s\ncam_y: %s\ncam_z: %s" % [ camera.translation.x, camera.translation.y, camera.translation.z]
-	
+		debug_nodes["state"].text = "STATE: " + STATE.keys()[state]
+		#debug_nodes["camera_position"].text = "cam_x: %s\ncam_y: %s\ncam_z: %s" % [ camera.translation.x, camera.translation.y, camera.translation.z]
+		var pointer_string = "idx:\npos:\npress:\n\nidx:\npos:\npress:\n"
+		
+		#if pointers.size() > 0:
+		#	pointer_string = ""
+		#	for pointer in pointers:
+		#		pointer_string += "idx: %s\npos: %s\npress: %s\n" % [ pointer.index, str(pointer.position.x) + " " + str(pointer.position.y), pointer.pressed]
+
+		#debug_nodes["pointers"].text = pointer_string
 
 ### Public Functions ###
 
@@ -173,11 +192,54 @@ func dolly_in(dolly_scale: float) -> void:
 	else:
 		print("Unknown camera type detected. Zooming disabled")
 		enable_zoom = false
+
+func pan(delta_x, delta_y): 
+	var offset = Vector3()
 	
-#func pan_left() -> void:
-#	var v = Vector3(0, 0, 0)	
-#	v
+	if camera.projection == Camera.PROJECTION_PERSPECTIVE:
+		var position = camera.translation
+		offset = position - target
+		var target_distance = offset.length()
+		
+		# half of the FOV is the vertical center of the screen
+		target_distance *= tan(camera.fov / 2.0) * PI / 180.0
+
+		pan_left(2 * delta_x * target_distance / get_viewport().get_size().y, camera.transform)
+		
+		#pan_up(1, camera.transform)
+		pan_up(2 * delta_y * target_distance / get_viewport().get_size().y, camera.transform)
 	
+	elif camera.projection == Camera.PROJECTION_ORTHOGONAL:
+		#pan_left(delta_y)
+		pass
+		
+	else:
+		print("Unknown camera type - pan disabled")
+		enable_pan = false
+
+func pan_left(distance, matrix) -> void:
+	var v = Vector3()
+	
+	# get x column of camera
+	v = matrix.basis.x
+	
+	v *= - distance
+	
+	pan_offset += v
+	
+func pan_up(distance, matrix) -> void:
+	var v = Vector3()
+	
+	if screen_space_panning:
+		v = matrix.basis.x
+	else:
+		v = matrix.basis.y
+		v.cross(Vector3(0, 1, 0))
+	
+	v *= distance
+	
+	pan_offset += v
+
 func save_state() -> void:
 	target0 = target
 	position0 = camera.translation
@@ -188,10 +250,10 @@ func reset() -> void:
 	camera.translation = position0
 	camera.fov = zoom0
 	
-	#camera.updateProjectionMatrix()
 	# dispatchevent changevent
 	
 	update()
+	
 	state = STATE.NONE
 
 # Gets called 60 frames per second
@@ -287,27 +349,122 @@ func update():
 		
 	scale = 1
 	
-
 func _input(event):
-	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT:
-		handle_mouse_down_rotate(event)
-	#if event is InputEventMouseMotion:
-	#	handle_mouse_move_rotate(event)
+	if enabled == false:
+		return
+		
+	# ON MOUSE DOWN (left, middle, right)
+	if event is InputEventMouseButton and (event.button_index == BUTTON_LEFT or event.button_index == BUTTON_RIGHT or event.button_index == BUTTON_MIDDLE) and event.pressed:
+		on_mouse_down(event)
+	
+	if event is InputEventMouseButton and not event.pressed:
+		on_mouse_up(event)
+	
+	if event is InputEventMouseMotion:
+		
+		# Windows has a bug that triggers an InputEventMouseMotion event
+		# with event.relative = 0, 0, so filtering that out
+		if not event.relative == Vector2.ZERO:
+			on_mouse_move(event)
+
+	# ON MOUSE WHEEL
 	if event is InputEventMouseButton and (event.button_index == BUTTON_WHEEL_DOWN or event.button_index == BUTTON_WHEEL_UP):
-		handle_mouse_wheel(event)
+		on_mouse_wheel(event)
+		
 	if event is InputEventScreenTouch:
-		handle_touch(event)#
+		handle_touch(event)
 	if event is InputEventScreenDrag:
 		on_touch_move(event)
 
+# "on_" functions define the first action after the input
+
+func on_mouse_down(event):	
+	var mouse_action = null
+	
+	match event.button_index:
+		BUTTON_LEFT:
+			mouse_action = mouse_buttons.LEFT
+		BUTTON_MIDDLE:
+			mouse_action = mouse_buttons.MIDDLE
+		BUTTON_RIGHT:
+			mouse_action = mouse_buttons.RIGHT
+		_:
+			mouse_action = -1 # why not none?
+			
+	match mouse_action:
+		MOUSE.DOLLY:
+			if not enable_zoom: return
+			
+			handle_mouse_down_dolly(event)
+			
+			state = STATE.DOLLY
+		MOUSE.ROTATE:
+			#if event.ctrlKey or event.metaKey or event.shiftkey
+				#if not enable pan: return
+				#handle_mouse_down_pan(event)
+				#state = STATE.PAN
+			#else
+			if not enable_rotate: return
+			
+			handle_mouse_down_rotate(event)
+			
+			state = STATE.ROTATE
+		
+		MOUSE.PAN: 
+			#if event.ctrlKey or event.metaKey or event.shiftkey
+				#if not enable pan: return
+				#handle_mouse_down_rotate(event)
+				#state = STATE.PAN
+			#else
+			if not enable_pan: return
+			
+			handle_mouse_down_pan(event)
+			
+			state = STATE.PAN 
+		
+		_:
+			state = STATE.NONE
+			
+	if not state == STATE.NONE:
+		emit_signal("start")
+			
+
+func on_mouse_move(event):
+	#print("on_mouse_move")
+	#track_pointer(event)
+
+	match state:
+		STATE.ROTATE:
+			if not enable_rotate: return
+			
+			handle_mouse_move_rotate(event)
+		
+		STATE.DOLLY:
+			if not enable_zoom: return
+			
+			handle_mouse_move_dolly(event)
+		
+		STATE.PAN:
+			if not enable_pan: return
+			
+			handle_mouse_move_pan(event)
+	
+
+func on_mouse_wheel(event):
+	if enabled == false or enable_zoom == false or state != STATE.NONE:
+		return
+	
+	emit_signal("start")
+	
+	handle_mouse_wheel(event)
+	
+	emit_signal("end")
+
 func handle_mouse_down_rotate(event: InputEventMouseButton) -> void:
-	if event.pressed && event.button_index == 1:
-		# if its a started left click, save the starting position
-		rotate_start = event.position
-	else: # event not pressed
-		pass
+	rotate_start = event.position
 
 func handle_mouse_move_rotate(event: InputEventMouseMotion) -> void:
+	print("handle_mouse_move_rotate")
 	rotate_end = event.position
 	
 	rotate_delta = (rotate_end - rotate_start) * rotate_speed
@@ -319,17 +476,46 @@ func handle_mouse_move_rotate(event: InputEventMouseMotion) -> void:
 	rotate_start = rotate_end
 	
 	update()
+
+func handle_mouse_down_pan(event: InputEventMouseButton) -> void:
+	pan_start = event.position
+
+func handle_mouse_move_pan(event: InputEventMouseMotion) -> void:
+	pan_end = event.position
 	
-	pass
+	pan_delta = (pan_end - pan_start) * pan_speed * 20.0
+	
+	pan(pan_delta.x, pan_delta.y)
+	
+	pan_start = pan_end
+	
+	update()
+
+func handle_mouse_down_dolly(event: InputEventMouseButton) -> void:
+	dolly_start = event.position
+
+func handle_mouse_move_dolly(event: InputEventMouseMotion) -> void:
+	dolly_end = event.position
+	
+	dolly_delta = dolly_end - dolly_start
+	
+	if dolly_delta.y > 0:
+		dolly_out(get_zoom_scale())
+	elif dolly_delta.y < 0:
+		dolly_in(get_zoom_scale())
+		
+	
+	dolly_start = dolly_end
+	
+	update()
 
 func handle_mouse_wheel(event):
-	if enabled == false or enable_zoom == false or state != STATE.NONE:
-		return
 	if event.button_index == BUTTON_WHEEL_UP:
 		dolly_in(get_zoom_scale())
 	elif event.button_index == BUTTON_WHEEL_DOWN:
 		dolly_out(get_zoom_scale())
-		pass
+	
+	update()
 
 func handle_touch(event):
 	if event.pressed:
@@ -338,43 +524,129 @@ func handle_touch(event):
 		on_pointer_up(event)
 
 func on_pointer_down(event):
+	print("on_pointer_down")
 	add_pointer(event)
 	on_touch_start(event)
-	pass
 
 func on_pointer_up(event):
+	print("on_pointer_up")
 	remove_pointer(event)
-	pass
+	
+	state = STATE.NONE
 
-func add_pointer(event):
+func on_mouse_up(event):
+	print("on_mouse_up")
+	
+	state = STATE.NONE
+
+func add_pointer(event):		
 	pointers.push_back(event)
 
 func remove_pointer(event):
-		
+	print("removed pointer %s" % event.index)
+	
+	pointerPositions.erase(event.index)
+	
 	for i in pointers.size():
 		if pointers[i].index == event.index:
 			pointers.remove(i)
 			return
-	pass
 
-func track_pointer(event):	
-	if not event.index in pointerPositions:
-		pointerPositions[event.index] = Vector2(0, 0)
+func track_pointer(event):
+
+	var pointer_index = 0
+	var position = Vector2()
 	
-	pointerPositions[event.index].x = event.position.x
-	pointerPositions[event.index].y = event.position.y
-	pass
+	# a mouse event does not have an index, so we need to generate one
+	# and assume there are no more than one mouse pointer
+	if not event is InputEventMouse:
+		pointer_index = event.index
+
+	if not pointerPositions.has(pointer_index):
+		pointerPositions[pointer_index] = Vector2(0, 0)
+	
+	pointerPositions[pointer_index].x = event.position.x
+	pointerPositions[pointer_index].y = event.position.y
 
 func get_second_pointer_position(event) -> Vector2:
-	var pointer = Vector2(0, 0)
+	
+	var pointer = null
+	
 	if event.index == pointers[0].index:
 		pointer = pointers[1]
 	else:
 		pointer = pointers[0]
+		
 	return pointerPositions[pointer.index]
+
+# decides which function is called depending on  number of pointers
+func on_touch_start(event):
+	track_pointer(event)
 	
+	match pointers.size():
+		
+		1:
+			
+			match touches.ONE:
+				
+				TOUCH.ROTATE:
+					if enable_rotate == false:
+						return
+
+					print("touch start rotate")
+					handle_touch_start_rotate()
+					
+					state = STATE.TOUCH_ROTATE
+				
+				TOUCH.PAN:
+					if enable_pan == false:
+						return
+					
+					print("touch start pan")
+					handle_touch_start_pan()
+					
+					state = STATE.TOUCH_PAN
+					
+				_:
+					
+					state = STATE.NONE
+					
+		2: 
+			
+			match touches.TWO:
+				
+				TOUCH.DOLLY_PAN:
+					if enable_zoom == false && enable_pan == false:
+						return
+						
+					print("dolly pan")
+						
+					handle_touch_start_dolly_pan()
+					
+					state = STATE.TOUCH_DOLLY_PAN
+				
+				TOUCH.DOLLY_ROTATE:
+					if enable_zoom == false && enable_rotate == false:
+						return
+						
+					#handle_touch_start_dolly_rotate()
+					
+					state = STATE.TOUCH_DOLLY_ROTATE
+				
+				_:
+					
+					state = STATE.NONE
+					
+		_:
+			
+			state = STATE.NONE
+	
+	if state != STATE.NONE:
+		emit_signal("start")
+
 # decides which function is called depending on  number of pointers
 func on_touch_move(event):
+	
 	track_pointer(event)
 	
 	match state:
@@ -388,46 +660,37 @@ func on_touch_move(event):
 			update()
 			
 		STATE.TOUCH_PAN:
-			print("touch_pan")
+			
+			if enable_pan == false:
+				return
+				
+			print("pan")
+			handle_touch_move_pan(event)
+			
+			update()
+			
 		STATE.TOUCH_DOLLY_PAN:
-			print("touch dolly pan")
+			
+			if enable_zoom == false && enable_pan == false:
+				return
+			
+			handle_touch_move_dolly_pan(event)
+			
+			update()
+			
 		STATE.TOUCH_DOLLY_ROTATE:
-			print("touch dolly rotate")
+			
+			if enable_zoom == false && enable_rotate == false:
+				return
+				
+			#handle_touch_move_dolly_rotate(event)
+			
+			update()
+			
 		_:
+			
 			state = STATE.NONE
-	pass
 
-# decides which function is called depending on  number of pointers
-func on_touch_start(event):
-	track_pointer(event)
-	
-	match pointers.size():
-		1:
-			print("one pointer")
-			match touches.ONE:
-				TOUCH.ROTATE:
-					if enable_rotate == false:
-						return
-
-					handle_touch_start_rotate()
-					
-					state = STATE.TOUCH_ROTATE
-				TOUCH.PAN:
-					if enable_pan == false:
-						return
-					
-					#handle_touch_start_pan()
-					state = STATE.TOUCH_PAN
-				_:
-					state = STATE.NONE
-		2: 
-			print("two pointers")
-			#todo
-		_:
-			print("no pointers")
-			state = STATE.NONE
-	pass
-	
 func handle_touch_start_rotate():
 	if pointers.size() == 1:
 		rotate_start.x = pointers[0].position.x
@@ -441,8 +704,7 @@ func handle_touch_start_rotate():
 
 func handle_touch_move_rotate(event):
 	if pointers.size() == 1:
-		rotate_end.x = event.position.x
-		rotate_end.y = event.position.y
+		rotate_end = event.position
 	else:
 		var position = get_second_pointer_position(event)
 		var x = 0.5 * (event.position.x + position.x)
@@ -451,7 +713,6 @@ func handle_touch_move_rotate(event):
 		rotate_end.x = x
 		rotate_end.y = y
 	
-	
 	rotate_delta = (rotate_end - rotate_start) * rotate_speed
 		
 	rotate_left(2 * PI * rotate_delta.x / get_viewport().size.y)
@@ -459,6 +720,76 @@ func handle_touch_move_rotate(event):
 	rotate_up(2 * PI * rotate_delta.y / get_viewport().size.y)
 	
 	rotate_start = rotate_end
+
+func handle_touch_move_pan(event):
+	if pointers.size() == 1:
+		pan_end.x = event.position.x
+		pan_end.y = event.position.y
+	else:
+		var position = get_second_pointer_position(event)
+		var x = 0.5 * (event.position.x + position.x)
+		var y = 0.5 * (event.position.y + position.y)
+		
+		pan_end.x = x
+		pan_end.y = y
+	
+	pan_delta = (pan_end - pan_start) * pan_speed * 20.0
+	
+	pan(pan_delta.x, pan_delta.y)
+	
+	pan_start = pan_end
+
+func handle_touch_start_dolly_pan():
+	if enable_zoom:
+		print("touch start dolly")
+		handle_touch_start_dolly()
+	if enable_pan:
+		print("touch start pan")
+		handle_touch_start_pan()
+
+func handle_touch_start_dolly():
+	var dx = pointers[0].position.x - pointers[1].position.x
+	var dy = pointers[0].position.y - pointers[1].position.y
+	
+	var distance = sqrt(dx * dx + dy * dy)
+	
+	dolly_start.x = 0
+	dolly_start.y = distance
+
+func handle_touch_start_pan():
+	if pointers.size() == 1:
+		pan_start.x = pointers[0].position.x
+		pan_start.y = pointers[0].position.y
+	else:
+		var x = 0.5 * (pointers[0].position.x + pointers[1].position.x)
+		var y = 0.5 * (pointers[0].position.y + pointers[1].position.y)
+		
+		pan_start.x = x
+		pan_start.y = y
+
+func handle_touch_move_dolly_pan(event):
+	if enable_zoom:
+		handle_touch_move_dolly(event)
+	if enable_pan:
+		handle_touch_move_pan(event)
+
+func handle_touch_move_dolly(event):
+	var position = get_second_pointer_position(event)
+	
+	var dx = event.position.x - position.x
+	var dy = event.position.y - position.y
+	
+	var distance = sqrt(dx * dx + dy * dy)
+	
+	dolly_end.x = 0
+	dolly_end.y = distance
+	
+	dolly_delta.x = 0
+	dolly_delta.y = pow(dolly_end.y / dolly_start.y, zoom_speed)
+	
+	dolly_out(dolly_delta.y)
+	
+	dolly_start = dolly_end
 
 ### HELPER FUNCTIONS AND UTILITIES ###
 
@@ -480,17 +811,19 @@ func enable_debug():
 	debug_layer.name = "debug_layer"
 	var v_box_container = VBoxContainer.new()
 	v_box_container.name = "list"
+	v_box_container.margin_left = 15
+	v_box_container.margin_top = 15
 	debug_layer.add_child(v_box_container)
 	
 	var root_viewport = get_tree().get_root()
 	var label = Label.new()
-	label.text = "OrbitControls Debug"
-	label.set("custom_colors/font_color", Color(1.0, 0.3, 0.3))
+	var projection = "PERSPECTIVE" if camera.projection == Camera.PROJECTION_PERSPECTIVE else "ORTHOGRAPHIC"
+	label.text = "OrbitControls Debug (%s)" % projection
+	label.set("custom_colors/font_color", Color(1.0, 0.5, 0.5))
 	add_to_debug(label, "Heading")
 	
-	add_string_to_debug("spherical_delta")
-	add_string_to_debug("camera_position")
-	add_string_to_debug("azimuth")
+	add_string_to_debug("state")
+	add_string_to_debug("pointers")
 
 	root_viewport.call_deferred("add_child", debug_layer)
 

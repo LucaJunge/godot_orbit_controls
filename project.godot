@@ -24,6 +24,9 @@ config/name="Orbit Controls"
 config/description="Orbit Controls for Godot Engine.
 Ported from three.js."
 run/main_scene="res://tests/Simple.tscn"
+boot_splash/image="res://icon-432-foreground.png"
+boot_splash/fullsize=false
+boot_splash/bg_color=Color( 0.14902, 0.172549, 0.231373, 1 )
 config/icon="res://addons/orbit_controls/godot-orbit-controls.svg"
 
 [display]
@@ -36,10 +39,6 @@ window/fullsize=true
 [editor_plugins]
 
 enabled=PoolStringArray( "res://addons/orbit_controls/plugin.cfg" )
-
-[input_devices]
-
-pointing/emulate_touch_from_mouse=true
 
 [physics]
 

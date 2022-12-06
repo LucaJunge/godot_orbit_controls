@@ -7,7 +7,6 @@ func _enter_tree():
 	# Add the new type with a name, a parent type, a script and an icon.
 	add_custom_type("OrbitControls", "Control", preload("orbit-controls.gd"), preload("godot-orbit-controls.png"))
 
-
 func _exit_tree():
 	# Clean-up of the plugin goes here.
 	# Always remember to remove it from the engine when deactivated.
