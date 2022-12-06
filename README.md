@@ -1,7 +1,5 @@
 # Godot Orbit Controls
 
-🚧 **In Development** 🚧
-
 This plugin adds Orbit Controls to the Godot Game Engine.
 
 The screenshot below is from the live demo which can be visited here:  
@@ -9,15 +7,15 @@ The screenshot below is from the live demo which can be visited here:
 
 ![Preview of the orbit controls](/images/orbit_controls_test.png)
 
-# Features (In development)
+# Features
 
 | **Feature**    | **Available with Mouse** | **Available with Touch** |
 | -------------- | :----------------------: | :----------------------: |
-| **Rotating**   |           [ ]            |           [x]            |
-| **Panning**    |           [ ]            |           [ ]            |
-| **Dolly Zoom** |           [ ]            |           [ ]            |
+| **Rotating**   |           [x]            |           [x]            |
+| **Panning**    |           [x]            |           [x]            |
+| **Dolly Zoom** |           [x]            |           [x]            |
 
-Other features unrelated to the input method include (and may not be implemented yet):
+Other features unrelated to the input method include:
 
 - Enabling and disabling the controls (useful for cutscenes or transitions)
 - Displaying debug information
@@ -55,4 +53,5 @@ You can also set a `Vector3` as the `Target` which the camera will orbit and adj
 
 # Acknowledgement
 
-This plugin is a GDScript port of the Orbit Controls in [three.js](https://github.com/mrdoob/three.js/blob/master/examples/jsm/controls/OrbitControls.js)
+This plugin is a GDScript port of the Orbit Controls in [three.js](https://github.com/mrdoob/three.js/blob/master/examples/jsm/controls/OrbitControls.js).
+It tries to mirror the features present and adapts the events and signals to match GDScripts capabilities.
