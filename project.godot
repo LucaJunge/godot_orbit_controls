@@ -27,7 +27,7 @@ run/main_scene="res://tests/Simple.tscn"
 boot_splash/image="res://icon-432-foreground.png"
 boot_splash/fullsize=false
 boot_splash/bg_color=Color( 0.14902, 0.172549, 0.231373, 1 )
-config/icon="res://addons/orbit_controls/godot-orbit-controls.svg"
+config/icon="res://icon-192.png"
 
 [display]
 
@@ -46,7 +46,6 @@ common/enable_pause_aware_picking=true
 
 [rendering]
 
-quality/driver/driver_name="GLES2"
 vram_compression/import_etc=true
 vram_compression/import_etc2=false
 environment/default_environment="res://default_env.tres"

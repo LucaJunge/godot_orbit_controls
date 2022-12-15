@@ -85,7 +85,7 @@ limits/max_azimuth_angle = 6.28319
 damping/enabled = true
 damping/damping_factor = 0.05
 pan/enabled = true
-pan/speed = 1.0
+pan/speed = 5.0
 pan/screen_space_panning = false
 pan/key_pan_speed = 7.0
 
