@@ -47,7 +47,7 @@ An example scene looks like this:
 To configure the add-on, take a look at the inspector.  
 In the `Camera` slot, click `Assign` to select your camera from the current scene tree. This will be the camera that moves around in your scene.
 
-You can also set a `Vector3` as the `Target` which the camera will orbit and adjust settings (not all settings implemented yet):
+You can also set a `Vector3` as the `Target` which the camera will orbit and adjust settings:
 
 ![](images/example_inspector.png)
 
