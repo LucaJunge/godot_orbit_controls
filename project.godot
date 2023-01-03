@@ -12,7 +12,7 @@ _global_script_classes=[ {
 "base": "Node",
 "class": "Spherical",
 "language": "GDScript",
-"path": "res://addons/orbit_controls/Spherical.gd"
+"path": "res://addons/orbit-controls/Spherical.gd"
 } ]
 _global_script_class_icons={
 "Spherical": ""
@@ -38,7 +38,7 @@ window/fullsize=true
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/orbit_controls/plugin.cfg" )
+enabled=PoolStringArray(  )
 
 [physics]
 
