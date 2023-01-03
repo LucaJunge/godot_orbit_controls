@@ -228,12 +228,12 @@ func update() -> void:
 		spherical_delta.phi *= (1 - damping_factor)
 		pan_offset *= (1 - damping_factor)
 	else:
-		spherical_delta.set(0, 0, 0)
-		pan_offset.set(0, 0, 0)
+		spherical_delta.set_from_cartesian_coords(0, 0, 0)
+		pan_offset = Vector3.ZERO
 		
 	scale = 1
 
-func _input(event: InputEvent) ->void:
+func _unhandled_input(event: InputEvent) -> void:
 	if enabled == false:
 		return
 		
