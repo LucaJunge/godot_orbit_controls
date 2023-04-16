@@ -1,140 +1,142 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=8 format=3 uid="uid://dql3wk3o1yf8v"]
 
-[ext_resource path="res://addons/orbit-controls/orbit-controls.gd" type="Script" id=1]
-[ext_resource path="res://tests/DebugCamera.gd" type="Script" id=2]
+[ext_resource type="Script" path="res://addons/orbit-controls/orbit-controls.gd" id="1"]
+[ext_resource type="Environment" uid="uid://84tqvgrwbstd" path="res://default_env.tres" id="1_8a66w"]
+[ext_resource type="Script" path="res://tests/DebugCamera.gd" id="2"]
 
-[sub_resource type="Shader" id=2]
-code = "// NOTE: Shader automatically converted from Godot Engine 3.5.stable's SpatialMaterial.
-
-shader_type spatial;
-render_mode async_visible,blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx;
-uniform vec4 albedo : hint_color;
-uniform sampler2D texture_albedo : hint_albedo;
-uniform float specular;
-uniform float metallic;
-uniform float roughness : hint_range(0,1);
-uniform float point_size : hint_range(0,128);
+[sub_resource type="Shader" id="2"]
+code = "shader_type spatial;
+render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx;
 uniform vec3 uv1_scale;
 uniform vec3 uv1_offset;
-uniform vec3 uv2_scale;
-uniform vec3 uv2_offset;
-
 
 void vertex() {
 	UV=UV*uv1_scale.xy+uv1_offset.xy;
 }
 
-
 void fragment() {
-	vec4 Wn = CAMERA_MATRIX * vec4( NORMAL, 0.0 );
-	vec2 base_uv = UV;
+	vec4 Wn = INV_VIEW_MATRIX * vec4( NORMAL, 0.0 );
 	ALBEDO = (Wn.rgb + 1.0 ) / 2.0;
 }"
 
-[sub_resource type="ShaderMaterial" id=3]
-shader = SubResource( 2 )
-shader_param/albedo = Color( 1, 1, 1, 1 )
-shader_param/specular = 0.5
-shader_param/metallic = 0.0
-shader_param/roughness = 1.0
-shader_param/point_size = 1.0
-shader_param/uv1_scale = Vector3( 1, 1, 1 )
-shader_param/uv1_offset = Vector3( 0, 0, 0 )
-shader_param/uv2_scale = Vector3( 1, 1, 1 )
-shader_param/uv2_offset = Vector3( 0, 0, 0 )
+[sub_resource type="ShaderMaterial" id="3"]
+render_priority = 0
+shader = SubResource("2")
+shader_parameter/uv1_scale = Vector3(1, 1, 1)
+shader_parameter/uv1_offset = Vector3(0, 0, 0)
 
-[sub_resource type="CylinderMesh" id=1]
+[sub_resource type="CylinderMesh" id="1"]
 top_radius = 0.05
 bottom_radius = 0.2
 height = 0.5
 radial_segments = 8
 rings = 1
 
-[node name="Main" type="Spatial"]
+[sub_resource type="GDScript" id="GDScript_5wcwm"]
+script/source = "extends VBoxContainer
 
-[node name="OrbitTarget" type="CSGBox" parent="."]
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+  pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+  pass
+
+
+func _on_orbit_controls_change():
+  var s = $\"../../../OrbitControls\".spherical
+  %Theta.text = \"Theta: %0.2f\" % s.theta
+  %Phi.text = \"Phi: %0.2f\" % s.phi
+  pass # Replace with function body.
+"
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("1_8a66w")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(1, 0, 0, 0, 0.957526, 0.288347, 0, -0.288347, 0.957526, 0, 0, 0)
+
+[node name="OrbitTarget" type="CSGBox3D" parent="."]
 layers = 2
-material_override = SubResource( 3 )
+material_override = SubResource("3")
 cast_shadow = 0
-width = 0.5
-height = 0.5
-depth = 0.5
+size = Vector3(0.5, 0.5, 0.5)
 
 [node name="OrbitControls" type="Control" parent="."]
-margin_right = 40.0
-margin_bottom = 40.0
-script = ExtResource( 1 )
-enabled = true
-debug = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1")
 _camera = NodePath("../MainCamera")
-target/target = Vector3( 0, 0, 0 )
-auto_rotate/enabled = false
-auto_rotate/speed = 1.0
-rotate/enabled = true
-rotate/speed = 1.0
-dolly/minimum_distance = 0.001
-dolly/maximum_distance = 100.0
-zoom/enabled = true
-zoom/speed = 1.0
-zoom/minimum_zoom = 0.001
-zoom/maximum_zoom = 100.0
-limits/min_polar_angle = 1e-06
-limits/max_polar_angle = 3.14159
-limits/min_azimuth_angle = -6.28318
-limits/max_azimuth_angle = 6.28319
-damping/enabled = true
-damping/damping_factor = 0.05
-pan/enabled = true
-pan/speed = 1.0
-pan/screen_space_panning = false
-pan/key_pan_speed = 7.0
 
-[node name="MainCamera" type="Camera" parent="."]
-transform = Transform( 1, 1.13479e-20, -0.000185331, 0, 1, 6.12303e-17, 0.000185331, -6.12303e-17, 1, -0.000555992, 1.83691e-16, 3 )
+[node name="MainCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 1.13479e-20, -0.000185331, 0, 1, 6.12303e-17, 0.000185331, -6.12303e-17, 1, -0.000555992, 1.83691e-16, 3)
 cull_mask = 1048574
 current = true
 
-[node name="CSGMesh" type="CSGMesh" parent="MainCamera"]
-transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -2 )
-mesh = SubResource( 1 )
+[node name="CSGMesh3D" type="CSGMesh3D" parent="MainCamera"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -2)
+mesh = SubResource("1")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 visible = false
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer"]
+custom_minimum_size = Vector2(50, 50)
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-rect_min_size = Vector2( 50, 50 )
-mouse_filter = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+mouse_filter = 2
 alignment = 2
 
 [node name="Spacer" type="Control" parent="CanvasLayer/HBoxContainer"]
-margin_right = 656.0
-margin_bottom = 540.0
+layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.0
 
-[node name="ViewportContainer" type="ViewportContainer" parent="CanvasLayer/HBoxContainer"]
-margin_left = 660.0
-margin_right = 960.0
-margin_bottom = 300.0
-rect_min_size = Vector2( 300, 300 )
-mouse_filter = 2
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+script = SubResource("GDScript_5wcwm")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 2
+mouse_filter = 2
 stretch = true
 
-[node name="Viewport" type="Viewport" parent="CanvasLayer/HBoxContainer/ViewportContainer"]
-size = Vector2( 300, 300 )
+[node name="SubViewport" type="SubViewport" parent="CanvasLayer/HBoxContainer/VBoxContainer/SubViewportContainer"]
 transparent_bg = true
 handle_input_locally = false
-fxaa = true
+size = Vector2i(300, 300)
 render_target_update_mode = 0
 
-[node name="DebugCamera" type="Camera" parent="CanvasLayer/HBoxContainer/ViewportContainer/Viewport"]
-transform = Transform( 0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 2, 2, 2 )
+[node name="DebugCamera" type="Camera3D" parent="CanvasLayer/HBoxContainer/VBoxContainer/SubViewportContainer/SubViewport"]
+transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 2, 2.522, 2)
 fov = 45.0
 size = 6.0
-script = ExtResource( 2 )
+script = ExtResource("2")
+
+[node name="Theta" type="Label" parent="CanvasLayer/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Theta"
+horizontal_alignment = 2
+
+[node name="Phi" type="Label" parent="CanvasLayer/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Phi"
+horizontal_alignment = 2
+
+[connection signal="change" from="OrbitControls" to="CanvasLayer/HBoxContainer/VBoxContainer" method="_on_orbit_controls_change"]
