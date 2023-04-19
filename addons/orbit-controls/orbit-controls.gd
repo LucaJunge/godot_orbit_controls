@@ -1,4 +1,4 @@
-tool
+@tool
 extends Control
 
 # SIGNALS #
@@ -35,46 +35,82 @@ enum TOUCH {
 	DOLLY_ROTATE
 }
 
+const EPSILON:float = 0.0001
+
 ### PROPERTIES IN INSPECTOR ###
 
+@export_category("Orbit Control Settings")
+@export
 var enabled: bool = true
+@export
 var debug: bool = false
+@export_node_path("Camera3D")
 var _camera: NodePath = NodePath()
-var camera: Node = null
+var camera:Camera3D = null
+
+@export_group("Target")
+@export
 var target: Vector3 = Vector3(0, 0, 0)
 
 # AUTO-ROTATE
+@export_group("Auto Rotate")
+@export
 var auto_rotate: bool = false
+@export_range(0.001, 10.0)
 var auto_rotate_speed: float = 1.0
 
 # ROTATE
+@export_group("Rotate")
+@export
 var enable_rotate: bool = true
+@export_range(0.001, 10.0)
 var rotate_speed: float = 1.0
 
 # DOLLY (Perspective Cam only)
+@export_group("Dolly")
+@export_range(0.001, 100.0)
 var min_distance: float = 0.001
+@export_range(0.001, 100.0)
 var max_distance: float = 100.0
 
 # ZOOM (Orthographic Camera only)
+@export_group("Zoom")
+@export
 var enable_zoom: bool = true
+@export_range(0.001, 100.0)
 var zoom_speed: float = 1.0
+@export_range(0.001, 100.0)
 var min_zoom: float = 0.001
+@export_range(0.001, 100.0)
 var max_zoom: float = 100.0
 
 # LIMITS
+@export_group("Limits")
+@export_range(0, 180, 0.001, "radians")
 var min_polar_angle: float = 0
-var max_polar_angle: float = PI - 0.0000001
-var min_azimuth_angle: float = - PI * 2.0 + 0.000001
-var max_azimuth_angle: float = 2.0 * PI + 0.000001
+@export_range(0, 180, 0.001, "radians")
+var max_polar_angle: float = PI
+@export_range(-360, 360, 0.001, "radians")
+var min_azimuth_angle: float = - TAU
+@export_range(-360, 360, 0.001, "radians")
+var max_azimuth_angle: float = TAU
 
 # DAMPING
+@export_group("Damping")
+@export
 var enable_damping: bool = true
+@export_range(0.001, 0.99)
 var damping_factor: float = 0.05
 
 # PAN
+@export_group("Pan")
+@export
 var enable_pan: bool = true
+@export_range(0.001, 10.00)
 var pan_speed: float = 1.0
+@export
 var screen_space_panning: bool = false
+@export_range(0.001, 100.00)
 var key_pan_speed: float = 7.0
 
 ### END OF PROPERTIES ###
@@ -87,7 +123,6 @@ var debug_nodes = {}
 # HELPERS
 var spherical = Spherical.new()
 var spherical_delta = Spherical.new()
-const two_pi: float = PI * 2
 
 # On rotate (left click)
 var rotate_start = Vector2(0, 0)
@@ -108,8 +143,9 @@ var pointers = []
 var pointerPositions = {}
 
 # Other
-var scale: float = 1
+var orbit_scale: float = 1
 var pan_offset = Vector3(0, 0, 0)
+var needs_update:bool = true
 
 var mouse_buttons = { "LEFT": MOUSE.ROTATE, "MIDDLE": MOUSE.DOLLY, "RIGHT": MOUSE.PAN }
 var touches = { "ONE": TOUCH.ROTATE, "TWO": TOUCH.DOLLY_PAN }
@@ -124,13 +160,13 @@ var valid: bool = false
 func _ready() -> void:
 	
 	# Code to run in-game
-	if not Engine.editor_hint:
+	if not Engine.is_editor_hint():
 		
 		valid = check_camera()
 	
 		# for reset
 		target0 = target
-		position0 = camera.translation
+		position0 = camera.position
 		zoom0 = camera.fov
 		
 		if debug:
@@ -140,16 +176,18 @@ func _process(delta: float) -> void:
 	if not valid:
 		return
 	
-	update()
+	if needs_update:
+		update()
 	
 	if debug:
 		debug_nodes["state"].text = "STATE: " + STATE.keys()[state]
 
 func update() -> void:
+	needs_update = auto_rotate
 	var offset: Vector3 = Vector3(0, 0, 0)
 	
 	# the current position of the camera 
-	var position: Vector3 = camera.translation
+	var position: Vector3 = camera.position
 	
 	# the current offset, copies the position into offset
 	# and subtracts the target vector
@@ -176,19 +214,19 @@ func update() -> void:
 		spherical.phi += spherical_delta.phi 
 
 	# restrict theta to be between desired limits
-	var _min = min_azimuth_angle
-	var _max = max_azimuth_angle
+	var _min = min_azimuth_angle + EPSILON
+	var _max = max_azimuth_angle - EPSILON
 	
 	# some is_finite() check missing here, as godot does not seem to allow infinite numbers anyway
 	if _min < - PI:
-		_min += two_pi
+		_min += TAU
 	elif _min > PI:
-		_min -= two_pi
+		_min -= TAU
 		
 	if _max < - PI:
-		_max += two_pi
+		_max += TAU
 	elif _max > PI:
-		_max -= two_pi
+		_max -= TAU
 	
 	if _min <= _max:
 		spherical.theta = max(_min, min(_max, spherical.theta))
@@ -199,11 +237,11 @@ func update() -> void:
 			spherical.theta = min(_max, spherical.theta)
  
 	# restrict phi to be between desired limits
-	spherical.phi = max(min_polar_angle, min(max_polar_angle, spherical.phi))
-	
+	spherical.phi = clampf(spherical.phi, min_polar_angle + EPSILON, max_polar_angle - EPSILON)
+
 	spherical.make_safe()
 	
-	spherical.radius *= scale
+	spherical.radius *= orbit_scale
 
 	# restrict radius to be between desired limits
 	spherical.radius = max(min_distance, min(max_distance, spherical.radius))
@@ -218,27 +256,29 @@ func update() -> void:
 	
 	position = target + offset
 	
-	camera.translation = position
-
-	camera.look_at(target, Vector3(0, 1, 0))
+	camera.look_at_from_position(position, target, Vector3.UP)
+	emit_signal("change")
 
 	# Dampen the delta spherical by the damping factor
 	if enable_damping:
-		spherical_delta.theta *= (1 - damping_factor)
-		spherical_delta.phi *= (1 - damping_factor)
+		# only update during _process when still dampening
+		needs_update = spherical_delta.dampen(damping_factor) or auto_rotate
 		pan_offset *= (1 - damping_factor)
+		if pan_offset.length_squared() > 0.001:
+			needs_update = true
+		
 	else:
 		spherical_delta.set_from_cartesian_coords(0, 0, 0)
 		pan_offset = Vector3.ZERO
 		
-	scale = 1
+	orbit_scale = 1
 
 func _unhandled_input(event: InputEvent) -> void:
 	if enabled == false:
 		return
 		
 	# ON MOUSE DOWN (left, middle, right)
-	if event is InputEventMouseButton and (event.button_index == BUTTON_LEFT or event.button_index == BUTTON_RIGHT or event.button_index == BUTTON_MIDDLE) and event.pressed:
+	if event is InputEventMouseButton and (event.button_index == MOUSE_BUTTON_LEFT or event.button_index == MOUSE_BUTTON_RIGHT or event.button_index == MOUSE_BUTTON_MIDDLE) and event.pressed:
 		on_mouse_down(event)
 	
 	# ON MOUSE UP
@@ -254,7 +294,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			on_mouse_move(event)
 
 	# ON MOUSE WHEEL
-	if event is InputEventMouseButton and (event.button_index == BUTTON_WHEEL_DOWN or event.button_index == BUTTON_WHEEL_UP):
+	if event is InputEventMouseButton and (event.button_index == MOUSE_BUTTON_WHEEL_DOWN or event.button_index == MOUSE_BUTTON_WHEEL_UP):
 		on_mouse_wheel(event)
 		
 	# ON TOUCH
@@ -270,15 +310,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func save_state() -> void:
 	target0 = target
-	position0 = camera.translation
+	position0 = camera.position
 	zoom0 = camera.fov
 
 func reset() -> void:
 	target = target0
-	camera.translation = position0
+	camera.position = position0
 	camera.fov = zoom0
-	
-	emit_signal("change")
 	
 	update()
 	
@@ -295,10 +333,10 @@ func get_azimuthal_angle() -> float:
 	return spherical.theta
 
 func get_distance() -> float:
-	return camera.translation.distance_squared_to(target)
+	return camera.position.distance_squared_to(target)
 
 func get_auto_rotation_angle() -> float:
-	return 2 * PI / 60 /60 * auto_rotate_speed
+	return (TAU / 360) * auto_rotate_speed
 	
 func get_zoom_scale() -> float:
 	return pow(0.95, zoom_speed)
@@ -314,9 +352,9 @@ func rotate_up(angle: float) -> void:
 ### DOLLY ###
 
 func dolly_out(dolly_scale: float) -> void:
-	if camera.projection == Camera.PROJECTION_PERSPECTIVE:
-		scale /= dolly_scale
-	elif camera.projection == Camera.PROJECTION_ORTHOGONAL:
+	if camera.projection == Camera3D.PROJECTION_PERSPECTIVE:
+		orbit_scale /= dolly_scale
+	elif camera.projection == Camera3D.PROJECTION_ORTHOGONAL:
 		camera.size = max(min_zoom, min(max_zoom, camera.size))
 		#zoom changed = true
 	else:
@@ -324,9 +362,9 @@ func dolly_out(dolly_scale: float) -> void:
 		enable_zoom = false
 	
 func dolly_in(dolly_scale: float) -> void:
-	if camera.projection == Camera.PROJECTION_PERSPECTIVE:
-		scale *= dolly_scale
-	elif camera.projection == Camera.PROJECTION_ORTHOGONAL:
+	if camera.projection == Camera3D.PROJECTION_PERSPECTIVE:
+		orbit_scale *= dolly_scale
+	elif camera.projection == Camera3D.PROJECTION_ORTHOGONAL:
 		camera.size = max(min_zoom, min(max_zoom, camera.size / dolly_scale))
 	else:
 		print("Unknown camera type detected. Zooming disabled")
@@ -337,8 +375,8 @@ func dolly_in(dolly_scale: float) -> void:
 func pan(delta_x, delta_y) -> void: 
 	var offset = Vector3()
 	
-	if camera.projection == Camera.PROJECTION_PERSPECTIVE:
-		var position = camera.translation
+	if camera.projection == Camera3D.PROJECTION_PERSPECTIVE:
+		var position = camera.position
 		offset = position - target
 		var target_distance = offset.length()
 		
@@ -350,7 +388,7 @@ func pan(delta_x, delta_y) -> void:
 		#pan_up(1, camera.transform)
 		pan_up(2 * delta_y * target_distance / get_viewport().get_size().y, camera.transform)
 	
-	elif camera.projection == Camera.PROJECTION_ORTHOGONAL:
+	elif camera.projection == Camera3D.PROJECTION_ORTHOGONAL:
 		#pan_left(delta_y)
 		pass
 		
@@ -417,11 +455,11 @@ func on_mouse_down(event):
 	var mouse_action = null
 	
 	match event.button_index:
-		BUTTON_LEFT:
+		MOUSE_BUTTON_LEFT:
 			mouse_action = mouse_buttons.LEFT
-		BUTTON_MIDDLE:
+		MOUSE_BUTTON_MIDDLE:
 			mouse_action = mouse_buttons.MIDDLE
-		BUTTON_RIGHT:
+		MOUSE_BUTTON_RIGHT:
 			mouse_action = mouse_buttons.RIGHT
 		_:
 			mouse_action = -1 # why not none?
@@ -660,9 +698,9 @@ func handle_mouse_move_dolly(event: InputEventMouseMotion) -> void:
 	update()
 
 func handle_mouse_wheel(event):
-	if event.button_index == BUTTON_WHEEL_UP:
+	if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 		dolly_in(get_zoom_scale())
-	elif event.button_index == BUTTON_WHEEL_DOWN:
+	elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 		dolly_out(get_zoom_scale())
 	
 	update()
@@ -783,8 +821,8 @@ func check_camera() -> bool:
 	if _camera:
 		camera = get_node(_camera)
 		
-		if not camera.is_class("Camera"):
-			printerr("Selected Camera is not a camera.")
+		if not camera.is_class("Camera3D"):
+			printerr("Selected Camera3D is not a camera.")
 			return false
 		else:
 			return true
@@ -798,15 +836,15 @@ func enable_debug():
 	debug_layer.name = "debug_layer"
 	var v_box_container = VBoxContainer.new()
 	v_box_container.name = "list"
-	v_box_container.margin_left = 15
-	v_box_container.margin_top = 15
+	v_box_container.offset_left = 15
+	v_box_container.offset_top = 15
 	debug_layer.add_child(v_box_container)
 	
 	var root_viewport = get_tree().get_root()
 	var label = Label.new()
-	var projection = "PERSPECTIVE" if camera.projection == Camera.PROJECTION_PERSPECTIVE else "ORTHOGRAPHIC"
+	var projection = "PERSPECTIVE" if camera.projection == Camera3D.PROJECTION_PERSPECTIVE else "ORTHOGRAPHIC"
 	label.text = "OrbitControls Debug (%s)" % projection
-	label.set("custom_colors/font_color", Color(1.0, 0.5, 0.5))
+	label.set("theme_override_colors/font_color", Color(1.0, 0.5, 0.5))
 	add_to_debug(label, "Heading")
 	
 	add_string_to_debug("state")
@@ -825,353 +863,3 @@ func add_to_debug(control: Control, name: String) -> void:
 	var list = debug_layer.get_node("list")
 	list.add_child(control)
 	debug_nodes[name] = control
-
-### Custom Inspector Stuff ###
-
-func _get(p):
-	if p == 'enabled':
-		return enabled
-	if p == 'debug':
-		return debug
-	if p == '_camera':
-		return _camera
-	if p == "target/target":
-		return target
-	if p == "auto_rotate/enabled":
-		return auto_rotate
-	if p == "auto_rotate/speed":
-		return auto_rotate_speed
-	if p == "rotate/enabled":
-		return enable_rotate
-	if p == "rotate/speed":
-		return rotate_speed
-	if p == "dolly/minimum_distance":
-		return min_distance
-	if p == "dolly/maximum_distance":
-		return max_distance
-	if p == "zoom/enabled":
-		return enable_zoom
-	if p == "zoom/speed":
-		return zoom_speed
-	if p == "zoom/minimum_zoom":
-		return min_zoom
-	if p == "zoom/maximum_zoom":
-		return max_zoom
-	if p == "limits/min_polar_angle":
-		return min_polar_angle
-	if p == "limits/max_polar_angle":
-		return max_polar_angle
-	if p == "limits/min_azimuth_angle":
-		return min_azimuth_angle
-	if p == "limits/max_azimuth_angle":
-		return max_azimuth_angle
-	if p == "damping/enabled":
-		return enable_damping
-	if p == "damping/damping_factor":
-		return damping_factor
-	if p == "pan/enabled":
-		return enable_pan
-	if p == "pan/speed":
-		return pan_speed
-	if p == "pan/screen_space_panning":
-		return screen_space_panning
-	if p == "pan/key_pan_speed":
-		return key_pan_speed
-
-func _set(p, v) -> bool:
-	if p == 'enabled':
-		enabled = v
-	if p == "_camera":
-		_camera = v
-	if p == "target/target":
-		target = v
-	if p == "auto_rotate/enabled":
-		auto_rotate = v
-	if p == "auto_rotate/speed":
-		var clamped = clamp(v, 0.001, 10.0)
-		auto_rotate_speed = clamped
-	if p == "rotate/enabled":
-		enable_rotate = v
-	if p == "rotate/speed":
-		var clamped = clamp(v, 0.001, 10.0)
-		rotate_speed = clamped
-	if p == "dolly/minimum_distance":
-		var clamped = clamp(v, 0.001, 100.0)
-		min_distance = clamped
-	if p == "dolly/maximum_distance":
-		var clamped = clamp(v, 0.001, 100.0)
-		max_distance = clamped
-	if p == "zoom/enabled":
-		enable_zoom = v
-	if p == "zoom/speed":
-		var clamped = clamp(v, 0.001, 100.0)
-		zoom_speed = clamped
-	if p == "zoom/minimum_zoom":
-		var clamped = clamp(v, 0.001, 100.0)
-		min_zoom = clamped
-	if p == "zoom/maximum_zoom":
-		var clamped = clamp(v, 0.001, 100.0)
-		max_zoom = clamped
-	if p == "limits/min_polar_angle":
-		var clamped = clamp(v, 0.000001, PI - 0.0000001)
-		min_polar_angle = clamped
-	if p == "limits/max_polar_angle":
-		var clamped = clamp(v, 0.000001, PI - 0.0000001)
-		max_polar_angle = clamped
-	if p == "limits/min_azimuth_angle":
-		var clamped = clamp(v, - PI * 2.0 + 0.000001, 2.0 * PI - 0.000001)
-		min_azimuth_angle = clamped
-	if p == "limits/max_azimuth_angle":
-		var clamped = clamp(v, - PI * 2.0 + 0.000001, 2.0 * PI + 0.000001)
-		max_azimuth_angle = clamped
-	if p == "damping/enabled":
-		enable_damping = v
-	if p == "damping/damping_factor":
-		var clamped = clamp(v, 0.001, 0.99)
-		damping_factor = clamped
-	if p == "pan/enabled":
-		enable_pan = v
-	if p == "pan/speed":
-		var clamped = clamp(v, 0.001, 10.00)
-		pan_speed = clamped
-	if p == "pan/screen_space_panning":
-		screen_space_panning = v
-	if p == "pan/key_pan_speed":
-		var clamped = clamp(v, 0.001, 100.00)
-		key_pan_speed = clamped
-		
-	return true
-
-func _get_property_list() -> Array:
-	var props = []
-	
-	props.append({
-		'name': 'Orbit Control Settings',
-		'type': TYPE_NIL,
-		'usage': PROPERTY_USAGE_CATEGORY
-	})
-	
-	props.append({
-		'name': 'enabled',
-		'type': TYPE_BOOL,
-	})
-	
-	props.append({
-		'name': 'debug',
-		'type': TYPE_BOOL,
-	})
-	
-	props.append({
-		'name': '_camera',
-		'type': TYPE_NODE_PATH,
-	})
-	
-	props.append({
-		'name': 'target/target',
-		'type': TYPE_VECTOR3,
-	})
-	
-	props.append({
-		'name': 'auto_rotate/enabled',
-		'type': TYPE_BOOL,
-	})
-	
-	props.append({
-		'name': 'auto_rotate/speed',
-		'type': TYPE_REAL,
-	})
-	
-	props.append({
-		'name': "rotate/enabled",
-		'type': TYPE_BOOL,
-	})
-	
-	props.append({
-		'name': "rotate/speed",
-		'type': TYPE_REAL,
-	})
-	
-	props.append({
-		'name': "dolly/minimum_distance",
-		'type': TYPE_REAL,
-	})
-	
-	props.append({
-		'name': "dolly/maximum_distance",
-		'type': TYPE_REAL,
-	})
-	
-	props.append({
-		'name': "zoom/enabled",
-		'type': TYPE_BOOL,
-	})
-	
-	props.append({
-		'name': "zoom/speed",
-		'type': TYPE_REAL,
-	})
-	
-	props.append({
-		'name': "zoom/minimum_zoom",
-		'type': TYPE_REAL,
-	})
-	
-	props.append({
-		'name': "zoom/maximum_zoom",
-		'type': TYPE_REAL,
-	})
-	
-	props.append({
-		'name': "limits/min_polar_angle",
-		'type': TYPE_REAL,
-	})
-	
-	props.append({
-		'name': "limits/max_polar_angle",
-		'type': TYPE_REAL,
-	})
-	
-	props.append({
-		'name': "limits/min_azimuth_angle",
-		'type': TYPE_REAL,
-	})
-	
-	props.append({
-		'name': "limits/max_azimuth_angle",
-		'type': TYPE_REAL,
-	})
-	
-	props.append({
-		'name': "damping/enabled",
-		'type': TYPE_BOOL,
-	})
-	
-	props.append({
-		'name': 'damping/damping_factor',
-		'type': TYPE_REAL,
-	})
-	
-	props.append({
-		'name': 'pan/enabled',
-		'type': TYPE_BOOL,
-	})
-	
-	props.append({
-		'name': 'pan/speed',
-		'type': TYPE_REAL,
-	})
-	
-	props.append({
-		'name': 'pan/screen_space_panning',
-		'type': TYPE_BOOL,
-	})
-	
-	props.append({
-		'name': 'pan/key_pan_speed',
-		'type': TYPE_REAL,
-	})
-
-	return props
-
-func property_can_revert(p):
-	if p == "enabled":
-		return true
-	if p == "debug":
-		return true
-	if p == "_camera":
-		return true
-	if p == "target/target":
-		return true
-	if p == "auto_rotate/enabled":
-		return true
-	if p == "auto_rotate/speed":
-		return true
-	if p == "rotate/enabled":
-		return true
-	if p == "rotate/speed":
-		return true
-	if p == "dolly/minimum_distance":
-		return true
-	if p == "dolly/maximum_distance":
-		return true
-	if p == "zoom/enabled":
-		return true
-	if p == "zoom/speed":
-		return true
-	if p == "zoom/minimum_zoom":
-		return true
-	if p == "zoom/maximum_zoom":
-		return true
-	if p == "limits/min_polar_angle":
-		return true
-	if p == "limits/max_polar_angle":
-		return true
-	if p == "limits/min_azimuth_angle":
-		return true
-	if p == "limits/max_azimuth_angle":
-		return true
-	if p == "damping/enabled":
-		return true
-	if p == "damping/damping_factor":
-		return true
-	if p == "pan/enabled":
-		return true
-	if p == "pan/speed":
-		return true
-	if p == "pan/screen_space_panning":
-		return true
-	if p == "pan/key_pan_speed":
-		return true
-	
-	# for every other built-in property, return false
-	return false
-
-func property_get_revert(p):
-	if p == "enabled":
-		return true
-	if p == "debug":
-		return false
-	if p == "_camera":
-		return NodePath()
-	if p == "target/target":
-		return Vector3(0, 0, 0)
-	if p == "auto_rotate/enabled":
-		return false
-	if p == "auto_rotate/speed":
-		return 1.0
-	if p == "rotate/enabled":
-		return true
-	if p == "rotate/speed":
-		return 1.0
-	if p == "dolly/minimum_distance":
-		return 0.001
-	if p == "dolly/maximum_distance":
-		return 100.0
-	if p == "zoom/enabled":
-		return true
-	if p == "zoom/speed":
-		return 1.0
-	if p == "zoom/minimum_zoom":
-		return 0.001
-	if p == "zoom/maximum_zoom":
-		return 100.0
-	if p == "limits/min_polar_angle":
-		return 0.000001
-	if p == "limits/max_polar_angle":
-		return PI - 0.0000001
-	if p == "limits/min_azimuth_angle":
-		return - PI * 2.0
-	if p == "limits/max_azimuth_angle":
-		return PI * 2.0
-	if p == "damping/enabled":
-		return true
-	if p == "damping/damping_factor":
-		return 0.05
-	if p == "pan/enabled":
-		return true
-	if p == "pan/speed":
-		return 1.0
-	if p == "pan/screen_space_panning":
-		return false
-	if p == "pan/key_pan_speed":
-		return 7.0

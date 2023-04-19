@@ -27,6 +27,17 @@ func make_safe() -> void:
 func set_from_vector(v: Vector3):
 	self.set_from_cartesian_coords(v.x, v.y, v.z)
 	
+func dampen(damping_factor:float) ->bool:
+	theta *= (1 - damping_factor)
+	phi *= (1 - damping_factor)
+	if abs(theta) < 0.001:
+		theta = 0.0
+	if abs(phi) < 0.001:
+		phi = 0.0
+	if theta == 0 and phi == 0:
+		radius = 0
+	return abs(theta) > 0 or abs(phi) > 0
+		
 func set_from_cartesian_coords(x: float, y: float, z: float):
 	radius = sqrt(x * x + y * y + z * z)
 	if radius == 0:
