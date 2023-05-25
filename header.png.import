@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d20432vdtcyfj"
-path="res://.godot/imported/godot-orbit-controls.png-906f7461a35de05b1c8e06b26c943cb8.ctex"
+uid="uid://dxwcbmtubfmwe"
+path="res://.godot/imported/header.png-821ebad7016a5b066e1ed461d09caccc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/orbit-controls/godot-orbit-controls.png"
-dest_files=["res://.godot/imported/godot-orbit-controls.png-906f7461a35de05b1c8e06b26c943cb8.ctex"]
+source_file="res://header.png"
+dest_files=["res://.godot/imported/header.png-821ebad7016a5b066e1ed461d09caccc.ctex"]
 
 [params]
 

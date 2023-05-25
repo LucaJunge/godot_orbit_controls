@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c78f00gce43vv"
-path="res://.godot/imported/icon-432-foreground.png-384b3e07d9315523a72e72e4d6091a03.ctex"
+uid="uid://d20432vdtcyfj"
+path="res://.godot/imported/node-icon.png-4ab6d8b229d64bf1f2a5d02276cf9ecd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://icon-432-foreground.png"
-dest_files=["res://.godot/imported/icon-432-foreground.png-384b3e07d9315523a72e72e4d6091a03.ctex"]
+source_file="res://addons/orbit-controls/node-icon.png"
+dest_files=["res://.godot/imported/node-icon.png-4ab6d8b229d64bf1f2a5d02276cf9ecd.ctex"]
 
 [params]
 

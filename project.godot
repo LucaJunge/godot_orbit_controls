@@ -11,14 +11,13 @@ config_version=5
 [application]
 
 config/name="Orbit Controls"
-config/description="Orbit Controls for Godot Engine.
-Ported from three.js."
+config/description="This plugin adds Orbit Controls to the Godot Game Engine.  
+Based on the Orbit Controls of three.js"
 run/main_scene="res://tests/Simple.tscn"
 config/features=PackedStringArray("4.0")
 boot_splash/bg_color=Color(0.14902, 0.172549, 0.231373, 1)
-boot_splash/image="res://icon-432-foreground.png"
-boot_splash/fullsize=false
-config/icon="res://icon-192.png"
+boot_splash/show_image=false
+config/icon="res://icon.png"
 
 [display]
 
@@ -38,5 +37,5 @@ common/enable_pause_aware_picking=true
 
 [rendering]
 
-environment/defaults/default_environment="res://default_env.tres"
+environment/defaults/default_clear_color=Color(0.301961, 0.301961, 0.301961, 1)
 vram_compression/import_etc=true

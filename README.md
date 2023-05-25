@@ -1,57 +1,57 @@
-# Godot Orbit Controls
+![Godot Orbit Controls Header Image](./header.png)
 
-This plugin adds Orbit Controls to the Godot Game Engine.
+This plugin adds Orbit Controls to the Godot Game Engine.  
+Based on the Orbit Controls of [three.js](https://threejs.org/docs/#examples/en/controls/OrbitControls)  
 
-The screenshot below is from the live demo which can be visited here:  
-[https://lucajunge.github.io/godot-orbit-controls/build/index.html](https://lucajunge.github.io/godot-orbit-controls/build/index.html)
-
-![Preview of the orbit controls](/images/orbit_controls_test.png)
+# Live Demo
+Test the live demo and features at [https://lucajunge.github.io/godot_orbit_controls/build/index.html](https://lucajunge.github.io/godot_orbit_controls/build/index.html)
 
 # Features
 
-| **Feature**    | **Available with Mouse** | **Available with Touch** |
-| -------------- | :----------------------: | :----------------------: |
-| **Rotating**   |           [x]            |           [x]            |
-| **Panning**    |           [x]            |           [x]            |
-| **Dolly Zoom** |           [x]            |           [x]            |
-
-Other features unrelated to the input method include:
-
-- Enabling and disabling the controls (useful for cutscenes or transitions)
-- Displaying debug information
-- Specifying the target to rotate around
-- Setting minimum and maximum distance for zooming
-- Setting limits for horizontal and vertical rotation
-- Enabling and disabling zooming, rotation, panning and damping
-- Setting speeds for rotating, zooming and panning
+- **Rotation, Panning, Dolly Zoom**
+- **Enabling** and **Disabling** the controls - useful for cutscenes or transitions
+- Specifying the **target** to rotate around
+- Setting **Minimum and Maximum Distance** for zooming
+- Setting **Horizontal and Vertical Limits** for rotation
+- Enabling and Disabling Zooming, Rotation, Panning and Damping individually
+- Setting speeds for rotation, zooming and panning
 
 # Installation
 
-Clone the repository
+## Asset Library
 
-```
+The plugin is available in the Asset Library for Godot 4.  
+Search for `Orbit Controls` in the Asset Library and click on `Download`. After it finished downloading, click `Install` on the newly opened window.  
+
+Dont forget to enable the plugin in the `Project Settings > Plugins > Orbit Controls > ☑ Enable`.
+
+
+## Manual Installation
+
+1. Clone the repository
+
+```bash
 git clone https://github.com/LucaJunge/godot-orbit-controls.git
 ```
 
-Copy the `addons/orbit-controls` to your `addons` folder in your project.
+2. Copy the `addons/orbit-controls` to your `addons` folder in your project.
 
-Enable the plugin in the `Project Settings`.
+3. Enable the plugin in the `Project Settings > Plugins > Orbit Controls > ☑ Enable`.
 
 # Usage
 
-To use the plugin in your project add the ![](addons/orbit_controls/godot-orbit-controls.png) `OrbitControls` node to your scene.  
-An example scene looks like this:
+## Adding the Orbit Controls to the scene
+
+You can add the ![](addons/orbit_controls/node-icon.png) `OrbitControls` as a new node to your scene.  
+An example scene coud look like this:
 
 ![](images/example_setup.png)
 
-To configure the add-on, take a look at the inspector.  
+## Configuration
+
+Take a look at the inspector for possible configuration options.  
 In the `Camera` slot, click `Assign` to select your camera from the current scene tree. This will be the camera that moves around in your scene.
 
-You can also set a `Vector3` as the `Target` which the camera will orbit and adjust settings:
+You can also set a `Vector3` as the `Target` which the camera will orbit:
 
 ![](images/example_inspector.png)
-
-# Acknowledgement
-
-This plugin is a GDScript port of the Orbit Controls in [three.js](https://github.com/mrdoob/three.js/blob/master/examples/jsm/controls/OrbitControls.js).
-It tries to mirror the features present and adapts the events and signals to match GDScripts capabilities.
