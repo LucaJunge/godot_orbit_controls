@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://dql3wk3o1yf8v"]
 
-[ext_resource type="Script" path="res://addons/orbit-controls/orbit-controls.gd" id="1"]
+[ext_resource type="Script" path="res://addons/orbit-controls/orbit-controls.gd" id="1_5llpt"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_3t03w"]
 sky_top_color = Color(0.384314, 0.454902, 0.54902, 1)
@@ -37,15 +37,11 @@ material_override = SubResource("StandardMaterial3D_3l7d6")
 cast_shadow = 0
 size = Vector3(0.5, 0.5, 0.5)
 
-[node name="OrbitControls" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-script = ExtResource("1")
-_camera = NodePath("../MainCamera")
-
 [node name="MainCamera" type="Camera3D" parent="."]
 transform = Transform3D(1, 1.13479e-20, -0.000185331, 0, 1, 6.12303e-17, 0.000185331, -6.12303e-17, 1, -0.000555992, 1.83691e-16, 3)
 cull_mask = 1048574
 current = true
+
+[node name="OrbitControls" type="Node3D" parent="."]
+script = ExtResource("1_5llpt")
+_camera = NodePath("../MainCamera")

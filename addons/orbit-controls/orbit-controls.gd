@@ -1,5 +1,5 @@
 @tool
-extends Control
+extends Node3D
 
 # SIGNALS #
 signal start

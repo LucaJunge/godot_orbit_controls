@@ -13,7 +13,7 @@ config_version=5
 config/name="Orbit Controls"
 config/description="This plugin adds Orbit Controls to the Godot Game Engine.  
 Based on the Orbit Controls of three.js"
-run/main_scene="res://tests/Simple.tscn"
+run/main_scene="res://examples/Example.tscn"
 config/features=PackedStringArray("4.0")
 boot_splash/bg_color=Color(0.14902, 0.172549, 0.231373, 1)
 boot_splash/show_image=false
