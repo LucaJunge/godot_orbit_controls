@@ -1,9 +1,9 @@
 ![Godot Orbit Controls Header Image](./header.png)
 
-This plugin adds Orbit Controls to the Godot Game Engine.  
-Based on the Orbit Controls of [three.js](https://threejs.org/docs/#examples/en/controls/OrbitControls)  
+>This plugin adds Orbit Controls to the Godot Game Engine.  
+>Based on the Orbit Controls of [three.js](https://threejs.org/docs/#examples/en/controls/OrbitControls)  
 
-# Live Demo
+# Live Demo (Godot 4.0+)
 Test the live demo and features at [https://lucajunge.github.io/godot_orbit_controls/build/index.html](https://lucajunge.github.io/godot_orbit_controls/build/index.html)
 
 # Features
