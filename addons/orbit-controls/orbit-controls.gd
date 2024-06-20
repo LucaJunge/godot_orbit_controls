@@ -45,7 +45,10 @@ var enabled: bool = true
 @export
 var debug: bool = false
 @export_node_path("Camera3D")
-var _camera: NodePath = NodePath()
+var _camera: NodePath = NodePath():
+	set(value):
+		_camera = value
+		update_configuration_warnings()
 var camera:Camera3D = null
 
 @export_group("Target")
@@ -107,7 +110,7 @@ var damping_factor: float = 0.05
 @export
 var enable_pan: bool = true
 @export_range(0.001, 10.00)
-var pan_speed: float = 1.0
+var pan_speed: float = 2.0
 @export
 var screen_space_panning: bool = false
 @export_range(0.001, 100.00)
@@ -156,6 +159,10 @@ var target0: Vector3 = Vector3(0, 0, 0)
 var position0: Vector3 = Vector3(0, 0, 0)
 var zoom0: float = 1.0
 var valid: bool = false
+
+func _get_configuration_warnings():
+	if not _camera:
+		return ["Please assign a camera to orbit with in the inspector."]
 	
 func _ready() -> void:
 	
@@ -383,10 +390,10 @@ func pan(delta_x, delta_y) -> void:
 		# half of the FOV is the vertical center of the screen
 		target_distance *= tan(camera.fov / 2.0) * PI / 180.0
 
-		pan_left(2 * delta_x * target_distance / get_viewport().get_size().y, camera.transform)
+		pan_left(-2 * delta_x * target_distance / get_viewport().get_size().y, camera.transform)
 		
 		#pan_up(1, camera.transform)
-		pan_up(2 * delta_y * target_distance / get_viewport().get_size().y, camera.transform)
+		pan_up(-2 * delta_y * target_distance / get_viewport().get_size().y, camera.transform)
 	
 	elif camera.projection == Camera3D.PROJECTION_ORTHOGONAL:
 		#pan_left(delta_y)
