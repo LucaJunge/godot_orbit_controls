@@ -432,12 +432,11 @@ func add_pointer(event):
 	pointers.push_back(event)
 
 func remove_pointer(event):
-	
 	pointerPositions.erase(event.index)
 	
 	for i in pointers.size():
 		if pointers[i].index == event.index:
-			pointers.remove(i)
+			pointers.remove_at(i)
 			return
 
 func track_pointer(event):
@@ -604,7 +603,7 @@ func on_touch_up(event):
 	state = STATE.NONE
 
 func on_mouse_up(event):	
-	# remove_pointer not needed here
+	# remove_pointer not needed here, as there is only one mouse click
 	
 	# how can I re-evaluate the state?
 	# e.g. we are in touch_dolly_pan and lift one finger.
